@@ -1,0 +1,11 @@
+create 4 .env files
+
+.env.production
+.env.staging
+.env.qa
+.env.dev
+
+each should have values
+
+API_BASE_URL=https://<environment-value>-api.example.com
+API_KEY=<environment-value>
