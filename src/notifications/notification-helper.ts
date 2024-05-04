@@ -39,19 +39,20 @@ export async function getFCMToken() {
   let fcmToken = await AsyncStorage.getItem('fcmToken');
 
   if (!fcmToken) {
-    console.log('if');
     try {
       const newFcmToken = await messaging().getToken();
       if (newFcmToken) {
-        console.log('newFcmToken', newFcmToken);
         await AsyncStorage.setItem('fcmToken', newFcmToken);
-        return newFcmToken;
+        return {fcmToken: newFcmToken, new: true};
       }
     } catch (error) {
-      console.log('error in storing fcm token in async storage', error);
+      console.log(
+        'error in storing fcm token in async storage or generating one',
+        error,
+      );
+      return {fcmToken: '', new: false};
     }
   } else {
-    console.log('FCM TOKEN', fcmToken);
-    return fcmToken;
+    return {fcmToken, new: false};
   }
 }
