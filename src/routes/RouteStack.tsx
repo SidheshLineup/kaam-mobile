@@ -8,8 +8,9 @@ import {useDispatch, useSelector} from 'react-redux';
 import {AppDispatch, RootState} from '../redux/store/store';
 import {setAccessToken, setFirstLogin, setUser} from '../redux/slice/authSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Contact from '../features/dashboard/Contact';
+import Dashboard from '../screens/dashboard/Dashboard';
 import JobPreferences from '../screens/additional-info/JobPreferences';
+import messaging from '@react-native-firebase/messaging';
 
 export type RootStackParamList = {
   RegistrationScreen: undefined;
@@ -19,7 +20,7 @@ export type RootStackParamList = {
     countryCode: {dialcode: string; flag: string};
   };
   JobPreferenceScreen: undefined;
-  ContactScreen: undefined;
+  DashboardScreen: undefined;
 };
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -63,6 +64,28 @@ function RouteStack() {
     retrieveUserFromAsyncStorage();
   }, [dispatch, naviagtion]);
 
+  useEffect(() => {
+    /**
+     * handles Foreground state notifications
+     */
+    const unsubscribe = messaging().onMessage(async remoteMessage => {
+      console.log('ForeGround Notification handler', remoteMessage);
+    });
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    /**
+     * handles Background state notifications
+     */
+    const unsubscribe = messaging().onNotificationOpenedApp(
+      async remoteMessage => {
+        console.log('Background Notification handler', remoteMessage);
+      },
+    );
+    return unsubscribe;
+  }, []);
+
   return !accessToken ? (
     <Stack.Navigator initialRouteName="RegistrationScreen">
       <Stack.Screen
@@ -91,8 +114,8 @@ function RouteStack() {
         />
       ) : (
         <Stack.Screen
-          name="ContactScreen"
-          component={Contact}
+          name="DashboardScreen"
+          component={Dashboard}
           options={{headerShown: false}}
         />
       )}

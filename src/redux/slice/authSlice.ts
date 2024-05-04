@@ -18,7 +18,6 @@ export const getOtp = createAsyncThunk(
   async (data: {dialcode: string; phone: string}, thunkAPI) => {
     try {
       const response = await API.patch(GET_OTP, data);
-      console.log('response.data', JSON.stringify(response.data, null, 4));
       return response.data;
     } catch (err) {
       if (err instanceof AxiosError) {
@@ -41,15 +40,14 @@ export const loginUser = createAsyncThunk(
     } catch (err) {
       if (err instanceof AxiosError) {
         if (err.response?.data) {
-          console.log('HHHHHHHHHHH=============', err.response.data);
+          return thunkAPI.rejectWithValue({error: err.response?.data});
         }
-        return thunkAPI.rejectWithValue({error: err.response?.data});
       }
     }
   },
 );
 
-type User = {
+export type User = {
   _id: string;
   firstname: string;
   lastname: string;
