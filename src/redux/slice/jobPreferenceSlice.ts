@@ -1,6 +1,6 @@
 import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
 import API from '../../helper/api-client';
-import {JOB_ROLES} from '../../helper/api-endpoints';
+import {JOB_ROLES, USER_JOB_PREFERENCE} from '../../helper/api-endpoints';
 import {RootState} from '../store/store';
 
 export type JobRole = {
@@ -27,6 +27,35 @@ export const getJobPreference = createAsyncThunk(
         headers: {Authorization: `Bearer ${accessToken}`},
         params: {paginate: false},
       });
+      return response.data;
+    } catch (error) {
+      console.log('jobPreference::error::', error);
+    }
+  },
+);
+
+export const saveUserJobPreference = createAsyncThunk(
+  'jobPreference/saveUserJobPreference',
+  async (data: any, {getState}) => {
+    try {
+      const state: RootState = getState() as RootState;
+      const accessToken = state.auth.accessToken;
+      const user = state.auth.user;
+
+      console.log('user', user);
+      console.log('data', data);
+      console.log('accessToken', accessToken);
+
+      const response = await API.post(
+        USER_JOB_PREFERENCE,
+        {
+          userId: user?._id,
+          roleIds: data,
+        },
+        {
+          headers: {Authorization: `Bearer ${accessToken}`},
+        },
+      );
       return response.data;
     } catch (error) {
       console.log('jobPreference::error::', error);

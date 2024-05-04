@@ -85,14 +85,14 @@ function RouteStack() {
     <Stack.Navigator>
       {isFirstLogin ? (
         <Stack.Screen
-          name="ContactScreen"
-          component={Contact}
+          name="JobPreferenceScreen"
+          component={JobPreferences}
           options={{headerShown: false}}
         />
       ) : (
         <Stack.Screen
-          name="JobPreferenceScreen"
-          component={JobPreferences}
+          name="ContactScreen"
+          component={Contact}
           options={{headerShown: false}}
         />
       )}

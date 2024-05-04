@@ -15,12 +15,16 @@ export const registerUser = createAsyncThunk(
 );
 export const getOtp = createAsyncThunk(
   'auth/getOtp',
-  async (data: {dialcode: string; phone: string}) => {
+  async (data: {dialcode: string; phone: string}, thunkAPI) => {
     try {
       const response = await API.patch(GET_OTP, data);
       console.log('response.data', JSON.stringify(response.data, null, 4));
       return response.data;
-    } catch (err) {}
+    } catch (err) {
+      if (err instanceof AxiosError) {
+        return thunkAPI.rejectWithValue(err.response?.data);
+      }
+    }
   },
 );
 export const loginUser = createAsyncThunk(
@@ -35,9 +39,11 @@ export const loginUser = createAsyncThunk(
       await AsyncStorage.setItem('user', JSON.stringify(user));
       return response.data;
     } catch (err) {
-      console.log('auth/loginUser::error', JSON.stringify(err, null, 4));
       if (err instanceof AxiosError) {
-        return thunkAPI.rejectWithValue({error: err.message});
+        if (err.response?.data) {
+          console.log('HHHHHHHHHHH=============', err.response.data);
+        }
+        return thunkAPI.rejectWithValue({error: err.response?.data});
       }
     }
   },

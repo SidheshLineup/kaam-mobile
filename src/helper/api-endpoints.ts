@@ -6,6 +6,7 @@ export const GET_OTP = `${COMMON_ENDPOINT}login`;
 
 export const JOBS = `${COMMON_ENDPOINT}jobs`;
 export const JOB_ROLES = `${COMMON_ENDPOINT}job-roles`;
+export const USER_JOB_PREFERENCE = `${COMMON_ENDPOINT}user-job-preferences`;
 export const JOBS_APPLICATIONS = `${COMMON_ENDPOINT}jobapplications`;
 export const CHATS = `${COMMON_ENDPOINT}chats`;
 

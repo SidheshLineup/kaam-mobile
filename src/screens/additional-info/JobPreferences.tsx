@@ -5,16 +5,38 @@ import {
   TextInput,
   TouchableOpacity,
 } from 'react-native';
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import KSafeAreaView from '../../shared/SafeAreaView';
 import KStatusBar from '../../shared/StatusBar';
 import {useDispatch, useSelector} from 'react-redux';
 import {AppDispatch, RootState} from '../../redux/store/store';
-import {JobRole, getJobPreference} from '../../redux/slice/jobPreferenceSlice';
+import {
+  JobRole,
+  getJobPreference,
+  saveUserJobPreference,
+} from '../../redux/slice/jobPreferenceSlice';
 import {SizedBox} from '../../shared/SizedBox';
 import {useColorScheme} from 'nativewind';
+import Animated, {
+  useSharedValue,
+  withTiming,
+  useAnimatedStyle,
+  withRepeat,
+  withSequence,
+} from 'react-native-reanimated';
+import Icon from '../../shared/Icon';
+import {CircleArrowRight} from 'lucide-react-native';
+import {RootStackParamList} from '../../routes/RouteStack';
+import {NativeStackScreenProps} from '@react-navigation/native-stack';
+import {setFirstLogin} from '../../redux/slice/authSlice';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const JobPreferences = () => {
+type JobPreferencesProps = NativeStackScreenProps<
+  RootStackParamList,
+  'JobPreferenceScreen'
+>;
+
+const JobPreferences = ({}: JobPreferencesProps) => {
   const dispatch = useDispatch<AppDispatch>();
   const jobRoles: JobRole[] = useSelector<RootState>(
     state => state.jobPreference.jobRoles,
@@ -24,7 +46,33 @@ const JobPreferences = () => {
   const [allJobRoles, setAllJobRoles] = useState(jobRoles ?? []);
   const [selectedJobs, setSelectedJobs] = useState<JobRole[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const maxSelection = 10;
+  const maxSelection = 5;
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const shateTranslationX = useSharedValue(0);
+  const errorOpacity = useSharedValue(0);
+
+  const shake = useCallback(() => {
+    const translationAmount = 10;
+    const timingConf = {
+      duration: 80,
+    };
+
+    errorOpacity.value = withTiming(1);
+
+    shateTranslationX.value = withSequence(
+      withTiming(translationAmount, timingConf),
+      withRepeat(withTiming(-translationAmount, timingConf), 4, true),
+      withTiming(0, timingConf),
+    );
+
+    setTimeout(() => {
+      errorOpacity.value = withTiming(0, {duration: 300});
+      if (errorOpacity.value === 0) {
+        setErrorMessage('');
+      }
+    }, 5000);
+  }, [shateTranslationX, errorOpacity]);
 
   useEffect(() => {
     dispatch(getJobPreference());
@@ -39,11 +87,17 @@ const JobPreferences = () => {
       if (selectedJobs.length < maxSelection) {
         setSelectedJobs([...selectedJobs, job]);
       } else {
-        // Handle max selection limit reached
-        console.log(`Max selection limit of ${maxSelection} reached`);
+        setErrorMessage(`You can only select ${maxSelection} job preferences!`);
+        shake();
       }
     }
   };
+  const textShakeStyle = useAnimatedStyle(() => {
+    return {
+      opacity: errorOpacity.value,
+      transform: [{translateX: shateTranslationX.value}], // Optional: Slide up animation
+    };
+  });
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -56,6 +110,17 @@ const JobPreferences = () => {
       ) ?? [];
     setAllJobRoles(filteredJobRoles);
   }, [jobRoles, searchQuery]);
+
+  const handleSubmitJobPreference = async () => {
+    const payload = selectedJobs.map(job => job._id);
+    dispatch(saveUserJobPreference(payload));
+
+    // navigation.navigate('ContactScreen');
+    dispatch(setFirstLogin({isFirstLogin: false}));
+    await AsyncStorage.setItem('isFirstLogin', 'false');
+  };
+
+  const isSaveButtonDisabled = selectedJobs.length < 1;
 
   return (
     <KSafeAreaView>
@@ -77,10 +142,13 @@ const JobPreferences = () => {
       </View>
 
       <ScrollView
-        className="my-2"
+        className="my-2 pt-2"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}>
-        <View className="py-4 flex-row flex-wrap">
+        <Animated.View style={[textShakeStyle]} className="mx-5">
+          <Text className="text-red-500">{errorMessage}</Text>
+        </Animated.View>
+        <View className="pb-4 flex-row flex-wrap">
           {allJobRoles?.map((jobRole: JobRole) => (
             <JobChip
               key={jobRole._id}
@@ -93,6 +161,34 @@ const JobPreferences = () => {
           ))}
         </View>
       </ScrollView>
+      <View className="py-2 flex-row justify-around">
+        <TouchableOpacity
+          className="bg-slate-50 dark:bg-gray-800 w-32 p-3 rounded-md flex-row items-center justify-center"
+          onPress={() => {}}>
+          <Text className="text-black dark:text-white">Skip</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          disabled={isSaveButtonDisabled}
+          className={`${
+            isSaveButtonDisabled
+              ? 'bg-slate-50 dark:bg-gray-800'
+              : 'bg-green-500'
+          }  w-32 p-3 rounded-md flex-row items-center justify-center`}
+          onPress={handleSubmitJobPreference}>
+          <Text
+            className={`mr-3 ${
+              isSaveButtonDisabled ? 'text-slate-300' : 'text-white'
+            }`}>
+            Save
+          </Text>
+          <Icon
+            IconComponent={CircleArrowRight}
+            darkColor={isSaveButtonDisabled ? 'text-slate-300' : 'text-white'}
+            lightColor={isSaveButtonDisabled ? 'text-slate-300' : 'text-white'}
+            style="rounded-full items-center justify-center"
+          />
+        </TouchableOpacity>
+      </View>
     </KSafeAreaView>
   );
 };

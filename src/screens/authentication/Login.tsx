@@ -18,11 +18,19 @@ import {RootStackParamList} from '../../routes/RouteStack';
 import {useDispatch} from 'react-redux';
 import {AppDispatch} from '../../redux/store/store';
 import {getOtp} from '../../redux/slice/authSlice';
+import Toast from 'react-native-toast-message';
 
 type LoginScreenProps = NativeStackScreenProps<
   RootStackParamList,
   'LoginScreen'
 >;
+
+type Error = {
+  className: string;
+  code: 404;
+  message: string;
+  name: string;
+};
 
 const validationSchema = yup.object().shape({
   phone: yup
@@ -59,7 +67,13 @@ const Login = ({navigation}: LoginScreenProps) => {
         countryCode,
       });
     } catch (error) {
-      console.log('error', error);
+      const err: Error = error as unknown as Error;
+      if (err.message) {
+        Toast.show({
+          type: 'errorToast',
+          text1: err.message,
+        });
+      }
     }
   };
 
@@ -68,6 +82,7 @@ const Login = ({navigation}: LoginScreenProps) => {
       <KStatusBar />
       <ScrollView className="my-2 " keyboardShouldPersistTaps="handled">
         <SizedBox height={90} width={0} />
+        {/* <ToastMessage /> */}
         <Text className="text-5xl font-extrabold text-black dark:text-white">
           Kaam
         </Text>

@@ -24,7 +24,7 @@ const Icon = ({
 
   const styles = clsx(
     style,
-    `${colorScheme === 'light' ? 'text-black ' : 'text-white bg-slate-700'}`,
+    `${colorScheme === 'light' ? 'text-black ' : 'text-white'}`,
     darkThemeIconColor,
     lightThemeIconColor,
   );
