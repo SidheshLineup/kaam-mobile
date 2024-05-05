@@ -1,7 +1,8 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import Registration from '../screens/authentication/Registration';
+import SplashScreen from '../screens/splash-screen/SplashScreen';
 import Login from '../screens/authentication/Login';
 import OtpVerification from '../screens/authentication/OtpVerification';
 import {useDispatch, useSelector} from 'react-redux';
@@ -12,6 +13,7 @@ import Contact from '../features/dashboard/Contact';
 import JobPreferences from '../screens/additional-info/JobPreferences';
 
 export type RootStackParamList = {
+  SplashScreen: undefined;
   RegistrationScreen: undefined;
   LoginScreen: undefined;
   OtpVerificationScreen: {
@@ -26,10 +28,8 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 function RouteStack() {
   const accessToken = useSelector<RootState>(state => state.auth.accessToken);
   const isFirstLogin = useSelector<RootState>(state => state.auth.isFirstLogin);
-
   const dispatch = useDispatch<AppDispatch>();
   const naviagtion = useNavigation();
-
   useEffect(() => {
     async function retrieveAccessTokenFromAsyncStorage() {
       const accessTokenFromAsyncStorage = await AsyncStorage.getItem(
@@ -63,38 +63,54 @@ function RouteStack() {
     retrieveUserFromAsyncStorage();
   }, [dispatch, naviagtion]);
 
-  return !accessToken ? (
-    <Stack.Navigator initialRouteName="RegistrationScreen">
+  return (
+    <Stack.Navigator initialRouteName="SplashScreen">
       <Stack.Screen
-        name="RegistrationScreen"
-        component={Registration}
+        name="SplashScreen"
+        component={SplashScreen}
         options={{headerShown: false}}
       />
-      <Stack.Screen
-        name="LoginScreen"
-        component={Login}
-        options={{headerShown: false}}
-      />
-      <Stack.Screen
-        name="OtpVerificationScreen"
-        component={OtpVerification}
-        options={{headerShown: false}}
-      />
-    </Stack.Navigator>
-  ) : (
-    <Stack.Navigator>
-      {isFirstLogin ? (
-        <Stack.Screen
-          name="JobPreferenceScreen"
-          component={JobPreferences}
-          options={{headerShown: false}}
-        />
+      {!accessToken ? (
+        <>
+          <Stack.Screen
+            name="RegistrationScreen"
+            component={Registration}
+            options={{headerShown: false}}
+          />
+          <Stack.Screen
+            name="LoginScreen"
+            component={Login}
+            options={{headerShown: false}}
+          />
+          <Stack.Screen
+            name="OtpVerificationScreen"
+            component={OtpVerification}
+            options={{headerShown: false}}
+          />
+        </>
       ) : (
-        <Stack.Screen
-          name="ContactScreen"
-          component={Contact}
-          options={{headerShown: false}}
-        />
+        <>
+          {isFirstLogin ? (
+            <>
+              <Stack.Screen
+                name="JobPreferenceScreen"
+                component={JobPreferences}
+                options={{headerShown: false}}
+              />
+              <Stack.Screen
+                name="ContactScreen"
+                component={Contact}
+                options={{headerShown: false}}
+              />
+            </>
+          ) : (
+            <Stack.Screen
+              name="ContactScreen"
+              component={Contact}
+              options={{headerShown: false}}
+            />
+          )}
+        </>
       )}
     </Stack.Navigator>
   );

@@ -16,12 +16,12 @@ type OtpVerificationScreenProps = NativeStackScreenProps<
   'OtpVerificationScreen'
 >;
 
-const OtpVerification = ({route}: OtpVerificationScreenProps) => {
+const OtpVerification = ({route, navigation}: OtpVerificationScreenProps) => {
   const {colorScheme} = useColorScheme();
   const dispatch = useDispatch<AppDispatch>();
   const handleOtpVerify = (otp: string) => {
     dispatch(loginUser({otp, phone: route.params.phone}));
-  };
+};
   return (
     <KSafeAreaView>
       <KStatusBar />

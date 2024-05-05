@@ -28,6 +28,7 @@
     "@reduxjs/toolkit": "^2.2.3",
     "axios": "^1.6.8",
     "clsx": "^2.1.0",
+    "lottie-react-native": "^6.7.2",
     "lucide-react-native": "^0.367.0",
     "nativewind": "^2.0.11",
     "react": "18.2.0",

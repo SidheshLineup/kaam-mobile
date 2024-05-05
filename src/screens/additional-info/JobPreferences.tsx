@@ -36,7 +36,7 @@ type JobPreferencesProps = NativeStackScreenProps<
   'JobPreferenceScreen'
 >;
 
-const JobPreferences = ({}: JobPreferencesProps) => {
+const JobPreferences = ({navigation}: JobPreferencesProps) => {
   const dispatch = useDispatch<AppDispatch>();
   const jobRoles: JobRole[] = useSelector<RootState>(
     state => state.jobPreference.jobRoles,
@@ -114,12 +114,16 @@ const JobPreferences = ({}: JobPreferencesProps) => {
   const handleSubmitJobPreference = async () => {
     const payload = selectedJobs.map(job => job._id);
     dispatch(saveUserJobPreference(payload));
-
-    // navigation.navigate('ContactScreen');
+    navigation.navigate('ContactScreen');
     dispatch(setFirstLogin({isFirstLogin: false}));
     await AsyncStorage.setItem('isFirstLogin', 'false');
   };
 
+  const skipPreferenceScreens = async () => {
+    dispatch(setFirstLogin({isFirstLogin: false}));
+    await AsyncStorage.setItem('isFirstLogin', 'false');
+    navigation.navigate('ContactScreen');
+  };
   const isSaveButtonDisabled = selectedJobs.length < 1;
 
   return (
@@ -164,7 +168,7 @@ const JobPreferences = ({}: JobPreferencesProps) => {
       <View className="py-2 flex-row justify-around">
         <TouchableOpacity
           className="bg-slate-50 dark:bg-gray-800 w-32 p-3 rounded-md flex-row items-center justify-center"
-          onPress={() => {}}>
+          onPress={() => skipPreferenceScreens()}>
           <Text className="text-black dark:text-white">Skip</Text>
         </TouchableOpacity>
         <TouchableOpacity
