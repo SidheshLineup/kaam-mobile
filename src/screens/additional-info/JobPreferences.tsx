@@ -114,7 +114,7 @@ const JobPreferences = ({navigation}: JobPreferencesProps) => {
   const handleSubmitJobPreference = async () => {
     const payload = selectedJobs.map(job => job._id);
     dispatch(saveUserJobPreference(payload));
-    navigation.navigate('ContactScreen');
+    // navigation.navigate('ContactScreen');
     dispatch(setFirstLogin({isFirstLogin: false}));
     await AsyncStorage.setItem('isFirstLogin', 'false');
   };
@@ -122,7 +122,7 @@ const JobPreferences = ({navigation}: JobPreferencesProps) => {
   const skipPreferenceScreens = async () => {
     dispatch(setFirstLogin({isFirstLogin: false}));
     await AsyncStorage.setItem('isFirstLogin', 'false');
-    navigation.navigate('ContactScreen');
+    // navigation.navigate('ContactScreen');
   };
   const isSaveButtonDisabled = selectedJobs.length < 1;
 

@@ -19,7 +19,7 @@ const SplashScreen = ({navigation}: SplashScreenProps) => {
       } else if (accessToken && isFirstLogin) {
         navigation.navigate('JobPreferenceScreen');
       } else {
-        navigation.navigate('ContactScreen');
+        navigation.navigate('DashboardScreen');
       }
     };
     const delay = !accessToken ? 4000 : 2000;
