@@ -8,6 +8,7 @@ import {Text, View, useColorScheme} from 'react-native';
 import {ColorSchemeSystem} from 'nativewind/dist/style-sheet/color-scheme';
 import {NavigationContainer} from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
 
 function App(): React.JSX.Element {
   const colorScheme = useColorScheme();
@@ -18,9 +19,11 @@ function App(): React.JSX.Element {
   }, [colorScheme, setColorScheme]);
 
   return (
-    <NavigationContainer>
-      <RouteStack />
-    </NavigationContainer>
+    <GestureHandlerRootView>
+      <NavigationContainer>
+        <RouteStack />
+      </NavigationContainer>
+    </GestureHandlerRootView>
   );
 }
 

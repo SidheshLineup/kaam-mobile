@@ -1,5 +1,5 @@
-import React, {useEffect, useState} from 'react';
-import {Text, View, TouchableOpacity} from 'react-native';
+import React, {useEffect, useState, useCallback, useMemo, useRef} from 'react';
+import {Text, View, TouchableOpacity, StyleSheet} from 'react-native';
 import KStatusBar from '../../shared/StatusBar';
 import KSafeAreaView from '../../shared/SafeAreaView';
 import {requestUserPermissionAndFcmToken} from '../../notifications/notification-helper';
@@ -22,11 +22,21 @@ import Animated, {
   useAnimatedStyle,
   withSpring,
   withTiming,
-  FadeInUp,
-  FadeOutUp,
+  LightSpeedInLeft,
+  LightSpeedOutLeft,
+  LightSpeedOutRight,
+  LightSpeedInRight,
 } from 'react-native-reanimated';
 import {User} from '../../redux/slice/authSlice';
 import {SearchBar} from '../../shared/SearchBar';
+import {DefaultFilters, FilterItemType} from './DefaultFilters';
+import {
+  BottomSheetView,
+  BottomSheetModalProvider,
+  BottomSheetModal,
+  BottomSheetBackdrop,
+} from '@gorhom/bottom-sheet';
+import {useColorScheme} from 'nativewind';
 
 const profileAnimationValue = {
   INITIAL_VALUE: 140,
@@ -38,15 +48,59 @@ const navigationMenuAnimationValue = {
 };
 
 const AnimatedSearchBar = Animated.createAnimatedComponent(SearchBar);
+const AnimatedDefaultFilters = Animated.createAnimatedComponent(DefaultFilters);
+
+const defaultFilterList = [
+  {
+    id: '1',
+    name: 'Nearby',
+    isSelected: false,
+  },
+  {
+    id: '2',
+    name: 'Pune',
+    isSelected: false,
+  },
+  {
+    id: '3',
+    name: 'Car',
+    isSelected: false,
+  },
+  {
+    id: '4',
+    name: 'Bike',
+    isSelected: false,
+  },
+  {
+    id: '5',
+    name: 'Himalayan 450',
+    isSelected: false,
+  },
+  {
+    id: '6',
+    name: 'SP 125',
+    isSelected: false,
+  },
+];
 
 const Dashboard = () => {
+  const {colorScheme} = useColorScheme();
   const dispatch = useDispatch<AppDispatch>();
   const user: User = useSelector<RootState>(state => state.auth.user) as User;
   const [showDetails, setShowDetails] = useState(true);
-  const [searchBar, toggleSearchBar] = useState(false);
+  const [searchBar, toggleSearchBar] = useState(true);
   const [role, setRole] = useState<'Employee' | 'Employer'>('Employee');
   const [searchText, setSearchText] = useState<string>('');
   const [expandNavigatioMenu, setExpandNavigatioMenu] = useState(false);
+  const [filterList, setSelectFilter] = useState<FilterItemType[]>([
+    {name: 'All', isSelected: false, id: '0'},
+    ...defaultFilterList,
+  ]);
+
+  const [advanceFilter, setAdvanceFilters] = useState<[]>([]);
+  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
+  const snapPoints = useMemo(() => ['50%', '75%'], []);
+
   const profileWidth = useSharedValue(profileAnimationValue.INITIAL_VALUE);
   const profileTextOpacity = useSharedValue(1);
 
@@ -121,6 +175,20 @@ const Dashboard = () => {
     };
   });
 
+  const handlePresentModalPress = useCallback(() => {
+    bottomSheetModalRef.current?.present();
+  }, []);
+
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        disappearsOnIndex={-1}
+        appearsOnIndex={0}
+      />
+    ),
+    [],
+  );
   return (
     <KSafeAreaView>
       <KStatusBar />
@@ -178,12 +246,37 @@ const Dashboard = () => {
         </Animated.View>
       </View>
 
-      {searchBar && (
-        <AnimatedSearchBar
-          entering={FadeInUp}
-          exiting={FadeOutUp}
-          searchText={searchText}
-          setSearchText={setSearchText}
+      {searchBar ? (
+        <BottomSheetModalProvider>
+          <AnimatedSearchBar
+            entering={LightSpeedInRight}
+            exiting={LightSpeedOutRight}
+            searchText={searchText}
+            setSearchText={setSearchText}
+            advanceFilter={advanceFilter}
+            showBottomSheet={handlePresentModalPress}
+          />
+          <BottomSheetModal
+            ref={bottomSheetModalRef}
+            snapPoints={snapPoints}
+            style={styles(colorScheme).sheetStyle}
+            backgroundStyle={styles(colorScheme).bottomSheetStyle}
+            enablePanDownToClose
+            animateOnMount
+            backdropComponent={renderBackdrop}>
+            <BottomSheetView style={styles(colorScheme).bottomSheetViewStyle}>
+              <Text className="text-black dark:text-white">
+                Advance filters
+              </Text>
+            </BottomSheetView>
+          </BottomSheetModal>
+        </BottomSheetModalProvider>
+      ) : (
+        <AnimatedDefaultFilters
+          filterList={filterList}
+          setSelectFilter={setSelectFilter}
+          entering={LightSpeedInLeft}
+          exiting={LightSpeedOutLeft}
         />
       )}
     </KSafeAreaView>
@@ -239,3 +332,17 @@ export const Role = ({
     </TouchableOpacity>
   );
 };
+
+const styles = (colorScheme: string) =>
+  StyleSheet.create({
+    sheetStyle: {
+      shadowColor: colorScheme === 'dark' ? 'black' : 'rgb(3 7 18)',
+    },
+    bottomSheetStyle: {
+      backgroundColor: colorScheme === 'dark' ? 'rgb(31 41 55)' : 'white',
+    },
+    bottomSheetViewStyle: {
+      flex: 1,
+      paddingHorizontal: 25,
+    },
+  });
